@@ -35,6 +35,8 @@ def sum_cards(in_list):
     
     return sum
 
+    # can use built-in function: sum(in_list)
+
 def user_winner(in_dict):
     if in_dict["user_sum"] > MAGIC_NUMBER:
         return 'n'
@@ -51,9 +53,12 @@ def ace_value_picker(in_list):
     for index in range(len(in_list)):
         if in_list[index] == 1:
             sum = 10 + sum_cards(in_list)
-            if sum < MAGIC_NUMBER:
-                in_list[index] == 11
+            if sum <= MAGIC_NUMBER:
+                in_list[index] = 11
                 break
+    return in_list
+
+    # can use built-in function: list.remove(1) and list.append(11) 
 
 while run == 'y':
 
@@ -84,17 +89,23 @@ while run == 'y':
     
     add_card(computer_card_list)
 
-    if sum_cards(computer_card_list) < 17:
-        add_card(computer_card_list)
+    if 1 not in computer_card_list:
+        if sum_cards(computer_card_list) < 17:
+            add_card(computer_card_list)
+    else:    
+        if (10 + sum_cards(computer_card_list)) >= 17:
+            computer_card_list = ace_value_picker(computer_card_list)
+        else:
+            add_card(computer_card_list)
+
+    user_card_list = ace_value_picker(user_card_list)
+    computer_card_list = ace_value_picker(computer_card_list)
 
     card_sum["computer_sum"] = sum_cards(computer_card_list)
     card_sum["user_sum"] = sum_cards(user_card_list)
 
-    ace_value_picker(user_card_list)
-    ace_value_picker(computer_card_list)
-
-    print(f"Your final hand: {user_card_list}")
-    print(f"Computer's final hand: {computer_card_list}")
+    print(f"Your final hand: {user_card_list}, Your Score: {sum(user_card_list)}")
+    print(f"Computer's final hand: {computer_card_list}, Computer Score: {sum(computer_card_list)}")
 
     if user_winner(card_sum) == 'y':
         print("You Win!")

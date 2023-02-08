@@ -1,9 +1,27 @@
 from tkinter import *
 from tkinter import messagebox
 from random import randint, choice, shuffle
-import pyperclip
+import pyperclip, json
 
 EMAIL = 'rav.cod3r@gmail.com'
+
+
+# Search Json FIle
+def search_website():
+    website = website_entry.get().title()
+    try:
+        with open('data.json', 'r') as data_file:
+            website_date = json.load(data_file)
+            email = website_date[website]['email']
+            password = website_date[website]['password']
+            messagebox.showinfo(title=website, message=f"Email: {email} \n"
+                                                       f"Password: {password}")
+    except FileNotFoundError as msg:
+        messagebox.showerror(title='Oops', message=msg)
+    except KeyError as msg:  # Could do "if website in data", no need to use exception if "if/else" can handle it
+        messagebox.showerror(title='Oops', message=f'No entry associated with {msg}')
+    finally:
+        website_entry.delete(0, END)
 
 
 # Random Password Gen
@@ -14,9 +32,9 @@ def gen_password():
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
 
-    password_list = [choice(letters) for num in range(randint(8, 10))]
-    password_list.extend([choice(symbols) for num in range(randint(2, 4))])
-    password_list.extend([choice(numbers) for num in range(randint(2, 4))])
+    password_list = [choice(letters) for _ in range(randint(8, 10))]
+    password_list.extend([choice(symbols) for _ in range(randint(2, 4))])
+    password_list.extend([choice(numbers) for _ in range(randint(2, 4))])
 
     shuffle(password_list)
     password = ''.join(password_list)
@@ -26,9 +44,16 @@ def gen_password():
 
 # Save Password, Validation
 def save_info():
-    website = website_entry.get()
+    website = website_entry.get().title()
     email = email_entry.get()
     pass_ = pass_entry.get()
+
+    new_data = {
+        website: {
+            'email': email,
+            'password': pass_,
+        }
+    }
 
     if len(website) == 0 or len(pass_) == 0:
         messagebox.showerror(title='Oops', message='Please do not leave any fields empty.')
@@ -39,9 +64,20 @@ def save_info():
                                                               f'Do you want to proceed?')
 
         if is_ok:
-            with open('data.txt', mode='a') as data_file:
-                data_file.write(f"{website} | {email} | {pass_}")
-                data_file.write('\n')
+            # with open('data.txt', mode='a') as data_file:
+            #     data_file.write(f"{website} | {email} | {pass_}")
+            #     data_file.write('\n')
+            try:
+                with open('data.json', 'r') as data_file:
+                    data = json.load(data_file)
+                    # print(data)
+                    data.update(new_data)
+            except FileNotFoundError:
+                data = new_data
+            finally:
+                with open('data.json', 'w') as data_file:
+                    # json.dump(new_data, data_file, indent=4)
+                    json.dump(data, data_file, indent=4)
 
             website_entry.delete(0, END)
             pass_entry.delete(0, END)
@@ -67,8 +103,8 @@ email_text.grid(row=3, column=1)
 pass_text = Label(text='Password:')
 pass_text.grid(row=4, column=1)
 
-website_entry = Entry(width=35)
-website_entry.grid(row=2, column=2, columnspan=2)
+website_entry = Entry(width=22)
+website_entry.grid(row=2, column=2)
 website_entry.focus()
 
 email_entry = Entry(width=35)
@@ -77,6 +113,9 @@ email_entry.grid(row=3, column=2, columnspan=2)
 
 pass_entry = Entry(width=22)
 pass_entry.grid(row=4, column=2)
+
+search_B = Button(text='Search', width=10, command=search_website)
+search_B.grid(row=2, column=3)
 
 generate_B = Button(text='Generate', width=10, command=gen_password)
 generate_B.grid(row=4, column=3)
